@@ -1,0 +1,49 @@
+[
+  {
+    "id": "p-1795384784247-i3yygf",
+    "slug": "mc-mwsdqtmf",
+    "title": "mc",
+    "author": "owner",
+    "shortDescription": "",
+    "description": "",
+    "features": [],
+    "category": "Narzędzia",
+    "tags": [
+      "fabric"
+    ],
+    "environments": [
+      "Klient"
+    ],
+    "minecraftVersions": [
+      "1.21.11"
+    ],
+    "license": "MIT",
+    "coverColor": "#4a4a4a",
+    "screenshots": [],
+    "versions": [
+      {
+        "id": "v-1795384784247",
+        "version": "1.0.0",
+        "gameVersion": "1.21.11",
+        "loaders": [
+          "fabric"
+        ],
+        "date": "2026-11-22",
+        "size": "483.0 KB",
+        "downloads": 0,
+        "url": "/uploads/1795384784238-Clutch-Client-Mod-Fabric-1.21.11.jar",
+        "fileName": "Clutch-Client-Mod-Fabric-1.21.11.jar",
+        "fileSize": 494588
+      }
+    ],
+    "downloads": 0,
+    "followers": 0,
+    "updatedAt": "2026-11-22",
+    "createdAt": "2026-11-22",
+    "links": [],
+    "compatibility": [],
+    "scanStatus": "scanning",
+    "fileName": "Clutch-Client-Mod-Fabric-1.21.11.jar",
+    "fileSize": 494588
+  }
+]
