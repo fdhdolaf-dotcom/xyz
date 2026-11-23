@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
-    const maxSize = parseInt(process.env.MAX_FILE_SIZE || "1073741824", 10); // default 1 GB
+    const maxSize = parseInt(process.env.MAX_FILE_SIZE || "20971520", 10); // default 20 MB
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: `File too large (max ${Math.round(maxSize / (1024 * 1024))} MB)` },

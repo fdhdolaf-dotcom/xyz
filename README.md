@@ -27,9 +27,18 @@ npm start
 3. Upewnij się, że katalogi są trwałe (persistent disk).
 
 ## Ograniczenia
-- Maksymalny rozmiar pliku: 5 MB (darmowy plan Netlify).
+- Maksymalny rozmiar pliku: 20 MB (konfigurowalny przez MAX_FILE_SIZE).
 - Na serverless (Vercel) pliki nie są trwałe — użyj Supabase/S3.
 
 ## Zmienne środowiskowe
-Brak wymaganych. Opcjonalnie:
+Brak wymaganych dla trybu lokalnego. Opcjonalnie:
 - `NETLIFY_SITE_ID` — ustawiane automatycznie na Netlify.
+- `BLOB_READ_WRITE_TOKEN` — Vercel Blob (trwałe pliki na Vercel).
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` — Cloudflare R2 (pliki do 5 TB).
+- `MAX_FILE_SIZE` — limit rozmiaru pliku w bajtach (domyślnie 20 MB).
+
+## Wdrożenie na Vercel (z trwałymi plikami)
+1. Vercel → Project → Storage → Create Blob Store.
+2. Skopiuj `BLOB_READ_WRITE_TOKEN` do Environment Variables.
+3. Redeploy.
+4. Pliki i projekty będą trwałe (Vercel Blob).

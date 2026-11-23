@@ -4,12 +4,8 @@ import path from "path";
 const PROJECTS_FILE = path.join(process.cwd(), "data", "projects.json");
 const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
 
-function isNetlify(): boolean {
-  return (
-    process.env.NETLIFY === "true" ||
-    process.env.NETLIFY_DEV === "true" ||
-    !!process.env.NETLIFY_SITE_ID
-  );
+function hasVercelBlob(): boolean {
+  return !!process.env.BLOB_READ_WRITE_TOKEN;
 }
 
 function hasR2(): boolean {
@@ -18,6 +14,14 @@ function hasR2(): boolean {
     process.env.R2_ACCESS_KEY_ID &&
     process.env.R2_SECRET_ACCESS_KEY &&
     process.env.R2_BUCKET_NAME
+  );
+}
+
+function isNetlify(): boolean {
+  return (
+    process.env.NETLIFY === "true" ||
+    process.env.NETLIFY_DEV === "true" ||
+    !!process.env.NETLIFY_SITE_ID
   );
 }
 
@@ -31,6 +35,20 @@ async function tryNetlifyStore(name: string) {
 }
 
 export async function getProjects(): Promise<unknown[]> {
+  // Vercel Blob
+  if (hasVercelBlob()) {
+    try {
+      const { list, get } = await import("@vercel/blob");
+      const { blobs } = await list({ prefix: "projects.json" });
+      if (blobs.length > 0) {
+        const res = await fetch(blobs[0].url);
+        if (res.ok) return await res.json();
+      }
+    } catch {
+      /* fall through */
+    }
+  }
+  // Netlify Blobs
   if (isNetlify() && !hasR2()) {
     const store = await tryNetlifyStore("projects");
     if (store) {
@@ -42,6 +60,7 @@ export async function getProjects(): Promise<unknown[]> {
       }
     }
   }
+  // File system fallback
   try {
     const raw = await fs.readFile(PROJECTS_FILE, "utf-8");
     return JSON.parse(raw);
@@ -51,6 +70,21 @@ export async function getProjects(): Promise<unknown[]> {
 }
 
 export async function saveProjects(projects: unknown): Promise<void> {
+  // Vercel Blob
+  if (hasVercelBlob()) {
+    try {
+      const { put } = await import("@vercel/blob");
+      await put("projects.json", JSON.stringify(projects), {
+        access: "public",
+        contentType: "application/json",
+        addRandomSuffix: false,
+      });
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  // Netlify Blobs
   if (isNetlify() && !hasR2()) {
     const store = await tryNetlifyStore("projects");
     if (store) {
@@ -69,7 +103,7 @@ export async function saveProjects(projects: unknown): Promise<void> {
 export async function uploadFile(
   file: File
 ): Promise<{ url: string; fileName: string; fileSize: number }> {
-  // Cloudflare R2 (S3-compatible) — supports up to 5 TB per file
+  // Cloudflare R2
   if (hasR2()) {
     const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
     const client = new S3Client({
@@ -96,7 +130,19 @@ export async function uploadFile(
     return { url: publicUrl, fileName: file.name, fileSize: file.size };
   }
 
-  // Netlify Blobs (small files)
+  // Vercel Blob (server-side, max ~4.5 MB per request)
+  if (hasVercelBlob()) {
+    try {
+      const { put } = await import("@vercel/blob");
+      const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const blob = await put(safeName, file, { access: "public" });
+      return { url: blob.url, fileName: file.name, fileSize: file.size };
+    } catch {
+      /* fall through */
+    }
+  }
+
+  // Netlify Blobs
   if (isNetlify()) {
     const store = await tryNetlifyStore("uploads");
     if (store) {
@@ -121,8 +167,8 @@ export async function uploadFile(
 }
 
 export async function getFile(key: string): Promise<{ data: Buffer; contentType: string } | null> {
-  // Netlify Blobs fallback for file serving
-  if (isNetlify() && !hasR2()) {
+  // Netlify Blobs
+  if (isNetlify() && !hasR2() && !hasVercelBlob()) {
     const store = await tryNetlifyStore("uploads");
     if (store) {
       try {

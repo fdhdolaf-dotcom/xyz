@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centrum Pobierania - TwojaNazwa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #090a0c;
+    --bg-card: rgba(255,255,255,0.04);
+    --bg-card-hover: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.12);
+    --text: #ffffff;
+    --text-muted: #9ca3af;
+    --accent: #7c3aed;
+    --accent-hover: #8b5cf6;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --glass: rgba(255,255,255,0.06);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: radial-gradient(circle at top left, #1e1f26 0%, #090a0c 60%, #050608 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: rgba(9,10,12,0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 1.35rem;
+  }
+  .logo span { color: #9ca3af; font-weight: 400; }
+  .search-wrapper { flex: 1; max-width: 520px; position: relative; }
+  .search-box {
+    width: 100%; background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border); color: var(--text);
+    padding: 10px 16px; border-radius: 10px; outline: none;
+    transition: all .2s; font-size: 0.95rem;
+  }
+  .search-box::placeholder { color: var(--text-muted); }
+  .search-box:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+  .user-actions { display: flex; gap: 10px; }
+  .btn-outline {
+    background: transparent; border: 1px solid var(--border); color: var(--text);
+    padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;
+    transition: all .2s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,58,237,0.1); }
+  .btn-primary {
+    background: var(--accent); border: none; color: #fff;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
+    transition: all .2s;
+  }
+  .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+  /* Layout */
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; }
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; }
+  .page-subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+  /* Filters */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+  .filter-chip {
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 0.85rem;
+    transition: all .2s; white-space: nowrap;
+  }
+  .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* Mod grid */
+  .mods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .mod-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; transition: all .25s;
+    cursor: pointer; display: flex; flex-direction: column;
+  }
+  .mod-card:hover {
+    border-color: var(--accent); background: var(--bg-card-hover);
+    transform: translateY(-4px);
+  }
+  .mod-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .mod-icon {
+    width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+    background: #000; border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .mod-meta { flex: 1; min-width: 0; }
+  .mod-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mod-category { font-size: 0.75rem; background: rgba(124,58,237,0.15); color: var(--accent);
+    padding: 2px 8px; border-radius: 6px; display: inline-block; }
+  .mod-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mod-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+  .mod-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mod-tag { font-size: 0.7rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--text-muted); padding: 3px 8px; border-radius: 6px; }
+  .download-btn {
+    background: #fff; color: #000; font-weight: 700; font-size: 0.8rem;
+    padding: 8px 14px; border-radius: 8px; text-decoration: none; border: none;
+    transition: all .2s;
+  }
+  .download-btn:hover { background: #e5e5e5; transform: translateY(-1px); }
+
+  /* Detail page */
+  .detail-back {
+    display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted);
+    text-decoration: none; font-size: 0.9rem; margin-bottom: 20px; cursor: pointer;
+  }
+  .detail-back:hover { color: var(--text); }
+  .detail-header {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px; margin-bottom: 32px;
+    display: flex; gap: 24px; align-items: flex-start;
+  }
+  .detail-icon { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+  .detail-info { flex: 1; }
+  .detail-title { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+  .detail-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; color: var(--text-muted); font-size: 0.85rem; }
+  .detail-desc { color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; }
+  .detail-download {
+    display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
+  }
+  .detail-download .btn-download-big {
+    background: var(--accent); color: #fff; text-decoration: none; font-weight: 700;
+    padding: 14px 24px; border-radius: 10px; font-size: 1rem; border: none; cursor: pointer;
+  }
+  .detail-download .btn-download-big:hover { background: var(--accent-hover); }
+  .detail-file-info { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Versions section */
+  .section-title { font-size: 1.25rem; font-weight: 700; margin: 40px 0 16px; color: var(--text); }
+  .versions-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
+  }
+  .version-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .version-info { flex: 1; }
+  .version-tag { font-size: 0.8rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .version-date { font-size: 0.8rem; color: var(--text-muted); }
+  .version-actions { display: flex; gap: 8px; }
+  .btn-sm {
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
+  }
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Empty / loading */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty h3 { color: var(--text); margin-bottom: 8px; }
+
+  footer {
+    text-align: center; padding: 32px; color: var(--text-muted);
+    font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 48px;
+  }
+
+  /* Hidden utility */
+  .hidden { display: none !important; }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    header { flex-direction: column; align-items: stretch; gap: 16px; }
+    .search-wrapper { max-width: none; }
+    .user-actions { justify-content: flex-end; width: 100%; }
+    .mods-grid { grid-template-columns: 1fr; }
+    .detail-header { flex-direction: column; align-items: stretch; }
+    .detail-download { align-items: stretch; flex-direction: row; gap: 12px; }
+    .detail-download .btn-download-big { text-align: center; }
+    .versions-grid { grid-template-columns: 1fr; }
+    .version-card { flex-direction: column; align-items: stretch; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⬜ Twoja<span>Nazwa</span></div>
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" class="search-box" placeholder="Szukaj modów, paczek tekstur... thankyou">
+  </div>
+  <div class="user-actions">
+    <button class="btn-outline" onclick="showPage('home')">Strona główna</button>
+    <button class="btn-primary" onclick="showPage('home')">Dodaj mod</button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME PAGE -->
+  <section id="page-home">
+    <div class="page-header">
+      <h1 class="page-title">Mods &amp; Resource Packs</h1>
+      <p class="page-subtitle">Pobieraj najnowsze mody i paczki tekstur dla swojej gry.</p>
+    </div>
+
+    <div class="filters">
+      <div class="filter-chip active" data-filter="all" onclick="setFilter(this, 'all')">Wszystkie</div>
+      <div class="filter-chip" data-filter="Optymalizacja" onclick="setFilter(this, 'Optymalizacja')">Optymalizacja</div>
+      <div class="filter-chip" data-filter="Resource Pack" onclick="setFilter(this, 'Resource Pack')">Resource Pack</div>
+      <div class="filter-chip" data-filter="Fabric" onclick="setFilter(this, 'Fabric')">Fabric</div>
+      <div class="filter-chip" data-filter="Forge" onclick="setFilter(this, 'Forge')">Forge</div>
+      <div class="filter-chip" data-filter="1.21.4" onclick="setFilter(this, '1.21.4')">1.21.4</div>
+    </div>
+
+    <div id="modsGrid" class="mods-grid"></div>
+    <div id="emptyHome" class="empty hidden">
+      <h3>Brak wyników</h3>
+      <p>Spróbuj zmienić filtry lub wyszukiwanie.</p>
+    </div>
+  </section>
+
+  <!-- DETAIL PAGE -->
+  <section id="page-detail" class="hidden">
+    <a href="#" class="detail-back" onclick="showPage('home'); return false;">← Powrót do listy</a>
+    <div id="detailContent"></div>
+  </section>
+
+</main>
+
+<footer>
+  &copy; <span id="year"></span> TwojaNazwa — Centrum Pobierania. Wszystkie pliki hostowane zewnętrznie.
+</footer>
+
+<script>
+  // ===== DANE MODÓW =====
+  // Dodawaj nowe mody tutaj. Każdy mod może mieć wiele wersji do pobrania.
+  const MODS = [
+    {
+      slug: "super-optymalizacja-fps",
+      title: "Super Optymalizacja FPS",
+      desc: "Zwiększa płynność gry i redukuje ścinki na słabszych komputerach. Działa z Fabric i Forge.",
+      icon: "ikony/mod1.png",
+      category: "Optymalizacja",
+      tags: ["Fabric", "Forge", "Optymalizacja", "FPS"],
+      versions: [
+        { version: "1.2.0", gameVersion: "1.21.4", loaders: ["Fabric", "Forge"], date: "2026-11-20", size: "2.4 MB", downloads: "12.4k", url: "https://github.com/TWOJNICK/TWOJE-REPO/releases/download/v1.0/super-optymalizacja.jar" },
+        { version: "1.1.5", gameVersion: "1.20.1", loaders: ["Fabric"], date: "2026-10-15", size: "2.1 MB", downloads: "8.1k", url: "#" }
+      ]
+    },
+    {
+      slug: "moja-paczka-tekstur-hd",
+      title: "Moja Paczka Tekstur HD",
+      desc: "Odświeżone tekstury bloków i mieczy w stylu dark-fantasy. Rozdzielczość 32x32.",
+      icon: "ikony/mod2.png",
+      category: "Resource Pack",
+      tags: ["Resource Pack", "32x32", "Tekstury"],
+      versions: [
+        { version: "1.0.0", gameVersion: "1.21.4", loaders: ["Wszystkie"], date: "2026-11-18", size: "18.1 MB", downloads: "5.6k", url: "https://github.com/TWOJNICK/TWOJE-REPO/releases/download/v1.0/paczka-tekstur.zip" }
+      ]
+    },
+    {
+      slug: "lepsze-cienie-shaders",
+      title: "Lepsze Cienie Shaders",
+      desc: "Realistyczne oświetlenie i cienie dla Minecrafta. Wymaga Optifine lub Iris.",
+      icon: "ikony/mod3.png",
+      category: "Shaders",
+      tags: ["Shaders", "Oświetlenie", "Iris", "Optifine"],
+      versions: [
+        { version: "2.3.1", gameVersion: "1.21.4", loaders: ["Iris", "Optifine"], date: "2026-11-10", size: "45.2 MB", downloads: "23.1k", url: "#" }
+      ]
+    }
+  ];
+
+  let currentFilter = 'all';
+  let currentSearch = '';
+
+  // ===== NAWIGACJA STRON =====
+  function showPage(pageId) {
+    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+    document.getElementById('page-' + pageId).classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }
+
+  // ===== RENDER LISTY MODÓW =====
+  function renderMods() {
+    const grid = document.getElementById('modsGrid');
+    const empty = document.getElementById('emptyHome');
+
+    const filtered = MODS.filter(m => {
+      const matchFilter = currentFilter === 'all' ||
+        m.category === currentFilter ||
+        m.tags.includes(currentFilter) ||
+        m.versions.some(v => v.gameVersion === currentFilter || v.loaders.includes(currentFilter));
+      const text = (m.title + ' ' + m.desc + ' ' + m.tags.join(' ')).toLowerCase();
+      const matchSearch = !currentSearch || text.includes(currentSearch.toLowerCase());
+      return matchFilter && matchSearch;
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    grid.innerHTML = filtered.map(m => `
+      <div class="mod-card" onclick="openDetail('${m.slug}')">
+        <div class="mod-header">
+          <img src="${m.icon}" alt="${escapeHtml(m.title)}" class="mod-icon" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"48\" height=\"48\" fill=\"#1f2024\"/><text x=\"24\" y=\"30\" font-size=\"20\" text-anchor=\"middle\" fill=\"#555\">⬜</text></svg>')}'">
+          <div class="mod-meta">
+            <div class="mod-title">${escapeHtml(m.title)}</div>
+            <div class="mod-category">${escapeHtml(m.category)}</div>
+          </div>
+        </div>
+        <div class="mod-desc">${escapeHtml(m.desc)}</div>
+        <div class="mod-footer">
+          <div class="mod-tags">${m.tags.slice(0,3).map(t => `<span class="mod-tag">${escapeHtml(t)}</span>`).join('')}</div>
+          <a href="${m.versions[0].url}" class="download-btn" target="_blank" rel="noopener">Pobierz</a>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function setFilter(el, filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderMods();
+  }
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    currentSearch = e.target.value;
+    renderMods();
+  });
+
+  // ===== SZCZEGÓŁY MODU =====
+  function openDetail(slug) {
+    const mod = MODS.find(m => m.slug === slug);
+    if (!mod) return;
+
+    const latest = mod.versions[0];
+    const content = document.getElementById('detailContent');
+    content.innerHTML = `
+      <div class="detail-header">
+        <img src="${mod.icon}" alt="${escapeHtml(mod.title)}" class="detail-icon" onerror="this.src='data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"96\" height=\"96\"><rect width=\"96\" height=\"96\" fill=\"#1f2024\"/><text x=\"48\" y=\"55\" font-size=\"40\" text-anchor=\"middle\" fill=\"#555\">⬜</text></svg>')}'">
+        <div class="detail-info">
+          <h1 class="detail-title">${escapeHtml(mod.title)}</h1>
+          <div class="detail-meta">
+            <span>${escapeHtml(mod.category)}</span>
+            <span>•</span>
+            <span>Wersja: ${escapeHtml(latest.version)}</span>
+            <span>•</span>
+            <span>Gra: ${escapeHtml(latest.gameVersion)}</span>
+            <span>•</span>
+            <span>${escapeHtml(latest.loaders.join(', '))}</span>
+          </div>
+          <p class="detail-desc">${escapeHtml(mod.desc)}</p>
+          <div class="detail-download">
+            <a href="${latest.url}" class="btn-download-big" target="_blank" rel="noopener">⬇ Pobierz v${escapeHtml(latest.version)}</a>
+            <span class="detail-file-info">${escapeHtml(latest.size)} · ${escapeHtml(latest.downloads)} pobrań</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Wszystkie wersje</div>
+      <div class="versions-grid">
+        ${mod.versions.map(v => `
+          <div class="version-card">
+            <div class="version-info">
+              <div class="version-tag">v${escapeHtml(v.version)}</div>
+              <div class="version-date">${escapeHtml(v.gameVersion)} · ${escapeHtml(v.loaders.join(', '))} · ${escapeHtml(v.date)}</div>
+            </div>
+            <div class="version-actions">
+              <span class="btn-sm" title="Rozmiar">${escapeHtml(v.size)}</span>
+              <a href="${v.url}" class="btn-sm" target="_blank" rel="noopener" ${v.url === '#' ? 'style="opacity:0.5;pointer-events:none"' : ''}>Pobierz</a>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="section-title">Tagi</div>
+      <div class="filters" style="margin-bottom: 40px;">
+        ${mod.tags.map(t => `<div class="filter-chip" onclick="setFilter(this, '${escapeHtml(t)}')">${escapeHtml(t)}</div>`).join('')}
+      </div>
+    `;
+
+    showPage('detail');
+  }
+
+  // ===== INIT =====
+  document.getElementById('year').textContent = new Date().getFullYear();
+  renderMods();
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+</script>
+
+</body>
+</html>

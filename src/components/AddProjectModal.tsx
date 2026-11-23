@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
+import { upload as vercelUpload } from "@vercel/blob/client";
 import { useApp } from "@/components/AppContext";
 import { useProjects } from "@/components/ProjectsContext";
 import type { Project } from "@/lib/types";
@@ -66,37 +67,54 @@ export default function AddProjectModal() {
     if (selectedFile) {
       setUploading(true);
       setUploadProgress(0);
+      const isLarge = selectedFile.size > 4 * 1024 * 1024;
+
       try {
-        const fd = new FormData();
-        fd.append("file", selectedFile);
-        const data = await new Promise<{ url?: string; fileName?: string; fileSize?: number; error?: string }>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open("POST", "/api/upload");
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-              setUploadProgress(Math.round((e.loaded / e.total) * 100));
-            }
-          };
-          xhr.onload = () => {
-            try {
-              resolve(JSON.parse(xhr.responseText));
-            } catch {
-              resolve({});
-            }
-          };
-          xhr.onerror = () => reject(new Error("Upload failed"));
-          xhr.send(fd);
-        });
-        if (data.error) {
-          setUploadError(data.error);
-          setUploading(false);
-          return;
+        if (isLarge) {
+          // Client upload for large files (bypasses 4.5 MB server limit)
+          const blob = await vercelUpload(selectedFile.name, selectedFile, {
+            access: "public",
+            handleUploadUrl: "/api/upload/client",
+            onUploadProgress: (e) => {
+              setUploadProgress(Math.round(e.percentage));
+            },
+          });
+          uploadedUrl = blob.url;
+          uploadedName = selectedFile.name;
+          uploadedSize = selectedFile.size;
+        } else {
+          // Server upload for small files
+          const fd = new FormData();
+          fd.append("file", selectedFile);
+          const data = await new Promise<{ url?: string; fileName?: string; fileSize?: number; error?: string }>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/upload");
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                setUploadProgress(Math.round((e.loaded / e.total) * 100));
+              }
+            };
+            xhr.onload = () => {
+              try {
+                resolve(JSON.parse(xhr.responseText));
+              } catch {
+                resolve({});
+              }
+            };
+            xhr.onerror = () => reject(new Error("Upload failed"));
+            xhr.send(fd);
+          });
+          if (data.error) {
+            setUploadError(data.error);
+            setUploading(false);
+            return;
+          }
+          uploadedUrl = data.url || "";
+          uploadedName = data.fileName || selectedFile.name;
+          uploadedSize = data.fileSize || selectedFile.size;
         }
-        uploadedUrl = data.url || "";
-        uploadedName = data.fileName || selectedFile.name;
-        uploadedSize = data.fileSize || selectedFile.size;
-      } catch {
-        setUploadError("Upload failed");
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : "Upload failed");
         setUploading(false);
         return;
       }
