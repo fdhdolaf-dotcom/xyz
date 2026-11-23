@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { AppProvider } from "@/components/AppContext";
 import { ProjectsProvider } from "@/components/ProjectsContext";
 import Navbar from "@/components/Navbar";
+import BackgroundMusic from "@/components/BackgroundMusic";
 import AddProjectModal from "@/components/AddProjectModal";
 import "./globals.css";
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pl" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-bg text-text font-sans">
+        <BackgroundMusic />
         <AppProvider>
           <ProjectsProvider>
             <Navbar />
